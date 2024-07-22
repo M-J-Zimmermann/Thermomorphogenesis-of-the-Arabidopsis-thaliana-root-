@@ -1,0 +1,64 @@
+// Test acquisition script for maura
+// Nenad Amodaj, feb2008
+//Modified Maura Zimmermann 2018
+
+void timedSleep(long sleepMs) {
+    while (sleepMs > 0) {
+        print("Remaining sleep time: " + (sleepMs / 1000));
+        // Sleep for remaining time, or 5s, whichever is shorter
+        sleepTime = Math.min(sleepMs, 5000);
+        Thread.sleep(sleepTime);
+        sleepMs -= sleepTime;
+    }
+}
+
+import org.micromanager.api.AcquisitionOptions;
+import java.lang.System;
+
+
+// clear all previous acquisitions
+gui.closeAllAcquisitions();
+gui.clearMessageWindow();
+
+// file locations
+acqName = "phot12-25C-rd1-PL2-Roo9b";
+rootDirName = "C:/acquisitionData";
+
+
+
+
+// parameters
+numFrames = 8;
+exposure = 20;
+littleIntervalMs = 5 * 1000;
+bigIntervalMs = 40 * 1000;
+
+// NOTE: allowed values for the binning property depend on your camera.
+// mmc.setProperty("Camera", "Binning", "2");
+
+// create acquisition and set options
+gui.openAcquisition(acqName, rootDirName, numFrames, 1, 1, 1, true, true);
+
+for (int i=0; i<numFrames; i++) {
+	now = System.currentTimeMillis();
+	gui.message("Acquiring frame " + i + ".");
+	mmc.setExposure(exposure);
+	mmc.setProperty("IDS uEye", "BitDepth", "8bit");
+  	gui.snapAndAddImage(acqName, i, 0, 0, 0);
+//	gain = mmc.getProperty("Camera", "Gain");
+//	gui.setImageProperty(acqName, i, 0, 0, "Gain", "" + gain);
+   
+ if (i < numFrames - 1) {
+   itTook = System.currentTimeMillis() - now;
+   if (i < numFrames - 1){
+   	gui.sleep(littleIntervalMs - itTook);
+   } 
+   if (i == 3){
+   	gui.sleep(bigIntervalMs - itTook);
+   }
+   }
+  }
+
+// for close of the above application window
+gui.closeAcquisitionWindow(acqName);
+
